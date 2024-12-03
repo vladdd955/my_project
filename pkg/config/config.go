@@ -6,5 +6,3 @@ import "html/template"
 type AppConfig struct {
 	TemplateCache map[string]*template.Template
 }
-
-//Check for test commit
