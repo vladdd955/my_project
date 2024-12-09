@@ -4,32 +4,38 @@ import (
 	"bytes"
 	"html/template"
 	"log"
+	"myproject/pkg/config"
 	"net/http"
 	"path/filepath"
 )
 
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
-	//create a template cache
-	tc, err := CreateTemplateCache()
-	//or get the template cache from config
+var app *config.AppConfig
 
-	if err != nil {
-		log.Fatal("Error creating template cache:", err)
+func NewTemplates(a *config.AppConfig) {
+	app = a
+}
+
+func RenderTemplate(w http.ResponseWriter, tmpl string) {
+	var tc map[string]*template.Template
+
+	if app.UseCache {
+		tc = app.TemplateCache
+	} else {
+		tc, _ = CreateTemplateCache()
 	}
+
 	//get request from cache
 	t, ok := tc[tmpl]
 	if !ok {
-		log.Fatal("Error loading template:", err)
+		log.Fatal("Error loading template:")
 	}
 	buf := new(bytes.Buffer)
-	err = t.Execute(buf, nil)
-	if err != nil {
-		log.Println(err)
-	}
+	_ = t.Execute(buf, nil)
+
 	// render the template bellow
-	_, err = buf.WriteTo(w)
+	_, err := buf.WriteTo(w)
 	if err != nil {
-		log.Println(err)
+		log.Println("Error writing template to browser ", err)
 	}
 }
 
